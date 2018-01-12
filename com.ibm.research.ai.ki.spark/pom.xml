@@ -1,0 +1,78 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.ibm.research.ai.ki</groupId>
+		<artifactId>cc-dbp-parent-pom</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>spark</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.ibm.research.ai.ki</groupId>
+			<artifactId>util</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.ibm.research.ai.ki</groupId>
+			<artifactId>nlp</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.ibm.research.ai.ki</groupId>
+			<artifactId>kbp</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>${spark-core-version}</artifactId>
+			<version>${spark-version}</version>
+			<!-- Apache License, Version 2.0 -->
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-common</artifactId>
+			<version>${hadoop-version}</version>
+			<scope>provided</scope>
+			<type>test-jar</type>
+			<!-- Apache License, Version 2.0 -->
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-common</artifactId>
+			<version>${hadoop-version}</version>
+			<scope>provided</scope>
+			<!-- Apache License, Version 2.0 -->
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-hdfs</artifactId>
+			<version>${hadoop-version}</version>
+			<scope>provided</scope>
+			<classifier>tests</classifier>
+			<!-- Apache License, Version 2.0 -->
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-hdfs</artifactId>
+			<version>${hadoop-version}</version>
+			<scope>provided</scope>
+			<!-- Apache License, Version 2.0 -->
+		</dependency>
+	
+		<dependency>
+			<groupId>com.fasterxml.jackson.jaxrs</groupId>
+			<artifactId>jackson-jaxrs-json-provider</artifactId>
+			<version>${jackson-jaxrs-json-provider.version}</version>
+			<!-- Apache License, Version 2.0 -->
+		</dependency>
+	</dependencies>
+
+</project>

@@ -1,0 +1,7 @@
+com/ibm/sai/ie/model/TransformStringTest.class
+com/ibm/sai/ie/model/OverlappingSpansTest.class
+com/ibm/sai/ie/model/TestJSON.class
+com/ibm/sai/ie/parse/TestNER.class
+com/ibm/sai/ie/parse/TestClearNLP.class
+com/ibm/sai/ie/parse/TestGazetteerMatcher.class
+com/ibm/sai/ie/parse/TestGazetteerMatcher$Comp.class

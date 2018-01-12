@@ -1,0 +1,5 @@
+com/ibm/sai/ie/corpora/crawl/SaveCommonCrawl$CrawlWriter.class
+com/ibm/sai/ie/corpora/crawl/EnglishDetector.class
+com/ibm/sai/ie/corpora/crawl/CharsetDetect.class
+com/ibm/sai/ie/corpora/crawl/HtmlToDocument.class
+com/ibm/sai/ie/corpora/crawl/SaveCommonCrawl.class

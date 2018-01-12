@@ -1,0 +1,174 @@
+#!/usr/bin/env python
+
+#create java directory with symlinks to standard java and the new java-viacloud added
+
+import sys
+import os
+import re
+import errno
+import threading
+from datetime import datetime
+import time
+
+#######################
+###### EDIT HERE ######
+#######################
+#what you ssh to to get into the cloud machine (use passwordless ssh: ssh-copy-id -i myRSAPublicKey.pub cloud_login)
+cloud_login='username@HOSTNAME'
+#where your java projects and jars go, create this directory before running the script
+cloud_working_dir='/somedir/wksp'
+#local directory to put temporary script file
+temp_script_dir='/homedir/.java-viacloud/'
+#######################
+
+
+#mostly the same as java-viaducc function of the same name
+def parse_java_command_line():
+    """Parse the command line and returns a dictionary including
+    information on the maximum amount of memory the job might need,
+    the Java class name, and its arguments."""
+    maximum_memory_required = '4G'  # our default if -Xmx not specified
+    args = iter(sys.argv[1:])
+    skip_next_arg = False
+
+    # scan args until we find the Java class
+    while 1:
+        argOrig = next(args)
+        arg = argOrig.lower()
+        if skip_next_arg:
+            skip_next_arg = False
+            continue
+
+        if arg.startswith('-'):
+            # these are the only options that take an argument and require
+            # a space between the flag and the argument
+            if arg in ('-cp', '-classpath', '-jar'):
+                skip_next_arg = True
+            elif arg.startswith('-xmx'): # maximum Java heap size
+                maximum_memory_required = arg[4:]
+            continue
+
+        break
+
+    return dict(maximum_memory_required=maximum_memory_required,
+                java_class_name=argOrig, java_class_args=list(args))
+
+def mkdir_p(path):
+	if not os.path.exists(path):
+	    try:
+	        os.makedirs(path)
+	    except OSError as exc:  # Python >2.5
+	        pass
+
+#find the oldest jar-version, mark it as the newest, and return that as our jar-version 
+def getJarVersion():
+	mkdir_p(temp_script_dir)
+	files = os.listdir(temp_script_dir)
+	files = filter(lambda n: n.startswith('jarVersion-'), files)
+	files = [os.path.join(temp_script_dir, f) for f in files] # add path to each file
+	files.sort(key=lambda x: os.path.getmtime(x))
+	if (len(files) < 7):
+		jarVersion = len(files)
+	else:
+		jarVersion = int(files[0][-1:]) #sloppy, we assume one digit for number of jar versions
+	with open(temp_script_dir+'/jarVersion-'+str(jarVersion), 'w+') as jv:
+		jv.write('x')
+	#print (jarVersion)
+	#print (files)
+	return jarVersion
+
+#we cycle through 7 versions of our project jars (so we don't overwrite an existing, active job with new classes - breaking the old job)
+jarV = '-'+str(getJarVersion())
+
+if (cloud_working_dir.endswith('/')):
+	cloud_working_dir = cloud_working_dir[:-1]
+#where logs will be placed
+cloud_logs_dir=cloud_working_dir+'/logs'
+if (cloud_logs_dir.endswith('/')):
+	cloud_logs_dir = cloud_logs_dir[:-1]
+if (not temp_script_dir.endswith('/')):
+	temp_script_dir = temp_script_dir + '/'
+
+
+cloud_args = []
+is_classpath = False
+classpath = ''
+for arg in sys.argv[1:]:
+	if (is_classpath):
+		classpath = arg
+		is_classpath = False
+	elif (arg == '-classpath'):
+		is_classpath = True
+        else:
+        	cloud_args.append("'" + arg + "'")
+
+java_command_line_info = parse_java_command_line()
+main_class = java_command_line_info['java_class_name']
+main_args = java_command_line_info['java_class_args']
+maximum_memory = java_command_line_info['maximum_memory_required']
+
+#print("main class is: " + main_class)
+#print("main args: "+" ".join(main_args))
+
+
+#now interpret classpath, gather jar names and rsync the .class and .jar
+all_jar = []
+rsync_dest=cloud_login+':'+cloud_working_dir
+#rsync multi-threaded (not sure it helps)
+threads = []
+jarList = []
+projDirs = []
+for cp in classpath.split(':'):
+	if (cp.endswith('/target/classes')):
+		proj = cp[0:-len('/target/classes')]
+		(wksp, projDir) = os.path.split(proj)
+		t = threading.Thread(target=os.system('cd "'+wksp+'"; rsync -u -r -R "'+projDir+'/target/classes" "'+rsync_dest+'"'))
+		t.start()
+		threads.append(t)
+		all_jar.append(projDir+jarV+'.jar')
+		projDirs.append(projDir)
+	elif (cp.endswith('/target/test-classes')):
+		pass #skip it
+	else:
+		jarList.append(cp)
+		all_jar.append(os.path.split(cp)[1])
+os.system('rsync -u '+' '.join(jarList)+' "'+rsync_dest+'"')
+for thread in threads:
+	thread.join()
+
+#Begin writing to temporary local script
+script_filename=temp_script_dir+'cloud_run_'+str(datetime.now().time())+'.sh'
+mkdir_p(os.path.dirname(script_filename))
+#remove old scripts
+os.system('find '+temp_script_dir+'/*.sh -mtime +7 -exec rm {} \\;')
+script = open(script_filename, 'w')
+
+script.write('mkdir -p "'+cloud_logs_dir+'"\n')
+script.write('cd "'+cloud_working_dir+'"\n')
+script.write('echo "#Autogenerated from java-viacloud" > makefile\n')
+for projDir in projDirs:
+	script.write('echo "'+projDir+jarV+'.jar: \$(shell find '+projDir+'/target/classes/ -type f)" >> makefile\n')
+	script.write('echo "\tjar -cf '+projDir+jarV+'.jar -C '+projDir+'/target/classes ." >> makefile\n')
+
+script.write('make '+' '.join([pd+jarV + '.jar' for pd in projDirs])+'\n')
+
+logfile = cloud_logs_dir+'/'+main_class+'_'+str(datetime.now().time())+'.log'
+#delete old logs in log/temp dirs: 
+script.write('find '+cloud_logs_dir+'/*.log -mtime +7 -exec rm {} \\;\n')
+script.write('touch "'+logfile+'"\n')
+script.write("nohup \\\n")
+script.write('java -Dfile.encoding=UTF-8 \\\n')
+script.write('-Xmx'+maximum_memory+' \\\n')
+script.write('-cp '+':'.join(all_jar)+' \\\n')
+script.write(main_class+" \\\n")
+script.write(' '.join(["'"+x+"'" for x in main_args])+'\n')
+script.write(' > "'+logfile+'" 2>&1 & \n')
+# tail output file
+script.write('tail --pid $! -F -n 1000 "'+logfile+'"\n')
+
+script.close()
+
+print('logfile is at '+logfile)
+
+os.system('ssh -Y -o StrictHostKeyChecking=no '+cloud_login+' "bash -s" < "'+script_filename+'"')
+
