@@ -1,5 +1,8 @@
-com/ibm/sai/ie/corpora/crawl/SaveCommonCrawl$CrawlWriter.class
-com/ibm/sai/ie/corpora/crawl/EnglishDetector.class
-com/ibm/sai/ie/corpora/crawl/CharsetDetect.class
-com/ibm/sai/ie/corpora/crawl/HtmlToDocument.class
-com/ibm/sai/ie/corpora/crawl/SaveCommonCrawl.class
+com/ibm/research/ai/ki/corpora/crawl/LanguageScorer.class
+com/ibm/research/ai/ki/corpora/crawl/SaveCommonCrawlBase.class
+com/ibm/research/ai/ki/corpora/crawl/CharsetDetect.class
+com/ibm/research/ai/ki/corpora/crawl/SaveCommonCrawlBase$CrawlWriter.class
+com/ibm/research/ai/ki/corpora/crawl/SaveCommonCrawl.class
+com/ibm/research/ai/ki/corpora/crawl/CommonCrawlConfig.class
+com/ibm/research/ai/ki/corpora/crawl/HtmlToDocument.class
+com/ibm/research/ai/ki/corpora/crawl/SaveCommonCrawlHdfs.class

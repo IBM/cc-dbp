@@ -1,4 +1,7 @@
-/users6/mrglass/workspaces/cc-dbp-dataset/com.ibm.research.ai.ki.corpus/src/main/java/com/ibm/sai/ie/corpora/crawl/CharsetDetect.java
-/users6/mrglass/workspaces/cc-dbp-dataset/com.ibm.research.ai.ki.corpus/src/main/java/com/ibm/sai/ie/corpora/crawl/HtmlToDocument.java
-/users6/mrglass/workspaces/cc-dbp-dataset/com.ibm.research.ai.ki.corpus/src/main/java/com/ibm/sai/ie/corpora/crawl/EnglishDetector.java
-/users6/mrglass/workspaces/cc-dbp-dataset/com.ibm.research.ai.ki.corpus/src/main/java/com/ibm/sai/ie/corpora/crawl/SaveCommonCrawl.java
+/users6/mrglass/workspaces/cc-dbp/com.ibm.research.ai.ki.corpus/src/main/java/com/ibm/research/ai/ki/corpora/crawl/SaveCommonCrawlBase.java
+/users6/mrglass/workspaces/cc-dbp/com.ibm.research.ai.ki.corpus/src/main/java/com/ibm/research/ai/ki/corpora/crawl/LanguageScorer.java
+/users6/mrglass/workspaces/cc-dbp/com.ibm.research.ai.ki.corpus/src/main/java/com/ibm/research/ai/ki/corpora/crawl/CommonCrawlConfig.java
+/users6/mrglass/workspaces/cc-dbp/com.ibm.research.ai.ki.corpus/src/main/java/com/ibm/research/ai/ki/corpora/crawl/SaveCommonCrawl.java
+/users6/mrglass/workspaces/cc-dbp/com.ibm.research.ai.ki.corpus/src/main/java/com/ibm/research/ai/ki/corpora/crawl/CharsetDetect.java
+/users6/mrglass/workspaces/cc-dbp/com.ibm.research.ai.ki.corpus/src/main/java/com/ibm/research/ai/ki/corpora/crawl/SaveCommonCrawlHdfs.java
+/users6/mrglass/workspaces/cc-dbp/com.ibm.research.ai.ki.corpus/src/main/java/com/ibm/research/ai/ki/corpora/crawl/HtmlToDocument.java
