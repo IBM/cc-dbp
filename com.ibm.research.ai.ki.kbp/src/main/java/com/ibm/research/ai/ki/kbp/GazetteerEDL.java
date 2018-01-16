@@ -100,34 +100,39 @@ public class GazetteerEDL {
     public static void process(File gazetteerFile, File inputDir, File outputFile, File idCountsTsvFile) {
         PeriodicChecker report = new PeriodicChecker(100);
         Object2IntOpenHashMap<String> id2count = idCountsTsvFile != null ? new Object2IntOpenHashMap<String>() : null;
-        DocumentSerialize.Format format = DocumentSerialize.formatFromName(outputFile.getName());
-        try (PrintStream out = FileUtil.getFilePrintStream(outputFile.getAbsolutePath())) {
-            BlockingThreadedExecutor threads = new BlockingThreadedExecutor(5);
-            GazetteerEDL edl = new GazetteerEDL(gazetteerFile.getAbsolutePath());
-            for (File f : new FileUtil.FileIterable(inputDir)) {
-                for (String doc : FileUtil.getLines(f.getAbsolutePath())) {
-                    if (report.isTime()) {
-                        System.out.println("Gazetteer processing on document "+report.checkCount());
-                    }
-                    threads.execute(() -> {
-                        Document d = edl.annotate(doc);
-                        //if idCounts is desired, we build it here
-                        if (id2count != null) {
-                            synchronized (id2count) {
-                                for (EntityWithId e : d.getAnnotations(EntityWithId.class)) {
-                                    id2count.addTo(e.id, 1);
-                                }
+        
+        DocumentSerialize.Format format = outputFile != null ? DocumentSerialize.formatFromName(outputFile.getName()) : null;
+        PrintStream out = outputFile != null ? FileUtil.getFilePrintStream(outputFile.getAbsolutePath()) : null;
+        
+        BlockingThreadedExecutor threads = new BlockingThreadedExecutor(5);
+        GazetteerEDL edl = new GazetteerEDL(gazetteerFile.getAbsolutePath());
+        for (File f : new FileUtil.FileIterable(inputDir)) {
+            for (String doc : FileUtil.getLines(f.getAbsolutePath())) {
+                if (report.isTime()) {
+                    System.out.println("Gazetteer processing on document "+report.checkCount());
+                }
+                threads.execute(() -> {
+                    Document d = edl.annotate(doc);
+                    //if idCounts is desired, we build it here
+                    if (id2count != null) {
+                        synchronized (id2count) {
+                            for (EntityWithId e : d.getAnnotations(EntityWithId.class)) {
+                                id2count.addTo(e.id, 1);
                             }
                         }
-                        String sd = DocumentSerialize.toString(d, format);
+                    }
+                    String sd = DocumentSerialize.toString(d, format);
+                    if (out != null) {
                         synchronized (out) {
                             out.println(sd);
                         }
-                    });
-                }
+                    }
+                });
             }
-            threads.awaitFinishing();
         }
+        threads.awaitFinishing();
+        if (out != null)
+            out.close();
         if (idCountsTsvFile != null) {
             try (PrintStream outIds = FileUtil.getFilePrintStream(idCountsTsvFile.getAbsolutePath())) {
                 for (Map.Entry<String, Integer> e : id2count.entrySet()) {

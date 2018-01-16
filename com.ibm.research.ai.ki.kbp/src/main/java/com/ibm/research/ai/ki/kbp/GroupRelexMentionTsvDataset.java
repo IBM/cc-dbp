@@ -18,6 +18,7 @@
 package com.ibm.research.ai.ki.kbp;
 
 import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 
 import com.ibm.research.ai.ki.util.*;
@@ -36,29 +37,40 @@ public class GroupRelexMentionTsvDataset {
 		for (String line : FileUtil.getLines(f)) {
 			int idSplit = line.indexOf('\t', line.indexOf('\t')+1);
 			String idPair = line.substring(0, idSplit);
-			//TODO: limit to maxMentionSet * maxMentionGroups
 			HashMapUtil.addAL(id2line, idPair, line);
 		}
 		PrintStream out = FileUtil.getFilePrintStream(f);
+		Set<String> dedup = new HashSet<>();
 		for (List<String> lines : id2line.values()) {
-			for (String line : lines)
-				out.println(line);
+		    dedup.clear();
+			for (String line : lines) {
+			    if (dedup.size() < config.maxMentionSet * config.maxMentionGroups && 
+			        dedup.add(line.substring(0, line.lastIndexOf('\t')))) 
+			    {
+			        out.println(line);
+			    }
+			}
 		}
 		out.close();
 	}
 
-	//TODO: limit number of open files
+	//CONSIDER: limit number of open files - some systems may have low 'ulimit -n'
 	public static void splitAndSort(RelexConfig config, File tsvFile) {
 		long len = tsvFile.length();
 		int numParts = (int)Math.ceil((double)len/maxFileSize);
 		if (numParts == 1) {
-			groupFile(config, tsvFile.getAbsolutePath());
+		    String onePart = FileUtil.removeExtension(tsvFile.getAbsolutePath())+"-part0.tsv";
+		    try {
+		        Files.move(Paths.get(tsvFile.getAbsolutePath()), Paths.get(onePart), 
+		                StandardCopyOption.REPLACE_EXISTING);
+		    } catch (Exception e) {Lang.error(e);}
+			groupFile(config, onePart);
 			return;
 		}
 		
 		PrintStream[] outs = new PrintStream[numParts];
 		for (int i = 0; i < outs.length; ++i)
-			outs[i] = FileUtil.getFilePrintStream(tsvFile.getAbsolutePath()+".part"+i);
+			outs[i] = FileUtil.getFilePrintStream(FileUtil.removeExtension(tsvFile.getAbsolutePath())+"-part"+i+".tsv");
 		
 		for (String line : FileUtil.getLines(tsvFile.getAbsolutePath())) {
 			int idSplit = line.indexOf('\t', line.indexOf('\t')+1);
@@ -69,7 +81,7 @@ public class GroupRelexMentionTsvDataset {
 		
 		for (int i = 0; i < outs.length; ++i) {
 			outs[i].close();
-			groupFile(config, tsvFile.getAbsolutePath()+".part"+i);
+			groupFile(config, FileUtil.removeExtension(tsvFile.getAbsolutePath())+"-part"+i+".tsv");
 		}
 		tsvFile.delete();
 	}

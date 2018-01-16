@@ -28,6 +28,7 @@ import com.ibm.research.ai.ki.kb.*;
 import com.ibm.research.ai.ki.util.*;
 import com.ibm.research.ai.ki.util.graphs.*;
 
+import org.apache.commons.cli.*;
 import org.apache.commons.lang3.*;
 
 import com.google.common.collect.*;
@@ -428,7 +429,7 @@ public class ConvertDBpedia {
                 }
             }
         }
-        System.out.println("No labels for: "+(dbrs.size()-labelCounts.size()));
+        System.out.println("No labels for: "+(dbrs.size()-labelCounts.size())+" creating labels from URIs.");
         for (String dbr : dbrs) {
             if (!labelCounts.containsKey(dbr)) {
                 labelsOut.println(dbr+"\t"+dbrUri2Label(dbr));
@@ -453,13 +454,27 @@ public class ConvertDBpedia {
     
     /**
      * Example args:
-       /my/local/dir/dbpediaKB
+       -config dbpediaConfig.properties
+       -kb /my/local/dir/dbpediaKB
      * @param args
      */
     public static void main(String[] args) {
+        Options options = new Options();
+        options.addOption("config", true, "A DBpediaKBConfig in properties file format");   
+        options.addOption("kb", true, "The kb directory to create or add to");
+        CommandLineParser parser = new DefaultParser();
+        CommandLine cmd = null;
+        try {
+            cmd = parser.parse(options, args);  
+        } catch (ParseException pe) {
+            Lang.error(pe);
+        }
+        
+        String configProperties = cmd.getOptionValue("config");
+        
         DBpediaKBConfig config = new DBpediaKBConfig();
-        config.fromProperties(PropertyLoader.loadProperties("dbpediaConfig.properties"));
-        config.kbDir = args[0];
+        config.fromProperties(PropertyLoader.loadProperties(configProperties));
+        config.kbDir = cmd.getOptionValue("kb");
         
         File dbpediaDir = config.kbDir();
         if (!new File(dbpediaDir, KBFiles.triplesTsv).exists()) {

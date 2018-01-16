@@ -4,6 +4,7 @@ import com.ibm.reseach.ai.ki.nlp.*;
 import com.ibm.research.ai.ki.util.*;
 
 import java.io.File;
+import java.nio.file.*;
 import java.util.*;
 import java.util.function.*;
 
@@ -21,12 +22,13 @@ public class KBPBuildDataset {
         Options options = new Options();
         options.addOption("config", true, "A RelexConfig in properties file format");   
         options.addOption("in", true, "The input corpus");
-        CommandLineParser parser = new PosixParser();
+        options.addOption("out", true, "The directory to create the dataset in");
+        options.addOption("kb", true, "The kb directory, should contain gt.ser.gz and typePairs.tsv");
+        CommandLineParser parser = new DefaultParser();
         CommandLine cmd = null;
         try {
             cmd = parser.parse(options, args);  
         } catch (ParseException pe) {
-            System.err.println(Lang.stringList(args, ";; "));
             Lang.error(pe);
         }
         
@@ -37,6 +39,17 @@ public class KBPBuildDataset {
         
         RelexConfig config = new RelexConfig();
         config.fromString(FileUtil.readFileAsString(configProperties));
+        config.groundTruthFile = new File(cmd.getOptionValue("kb"), "gt.ser.gz").getAbsolutePath();
+        config.convertDir = cmd.getOptionValue("out");
+        try {
+            FileUtil.ensureWriteable(new File(config.convertDir, "typePairs.tsv"));
+            Files.copy(
+                    Paths.get(cmd.getOptionValue("kb"), "typePairs.tsv"), 
+                    Paths.get(config.convertDir, "typePairs.tsv"), 
+                    StandardCopyOption.REPLACE_EXISTING);
+        } catch (Exception e) {
+            Lang.error(e);
+        }
         
         IRelexDatasetManager<? extends IRelexMention> rdmanager = config.getManager();
         
@@ -50,7 +63,7 @@ public class KBPBuildDataset {
             }
         };
         Iterable<Document> docs = new NestedIterable<File, Document>(files, f2docs);
-        File unsorted = new File(new File(config.convertDir, "relexMentions"), "all.tsv");
+        File unsorted = new File(new File(config.convertDir, "contextSets"), "contexts.tsv");
         System.out.println("Beginning tsv dataset creation");
         ctd.process(docs, unsorted);
         

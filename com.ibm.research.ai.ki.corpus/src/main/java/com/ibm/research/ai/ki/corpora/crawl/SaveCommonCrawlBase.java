@@ -20,6 +20,7 @@ package com.ibm.research.ai.ki.corpora.crawl;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.atomic.*;
 import java.util.zip.*;
 
 import com.ibm.reseach.ai.ki.nlp.*;
@@ -65,6 +66,7 @@ public abstract class SaveCommonCrawlBase {
     protected DocumentSerialize.Format saveFormat = DocumentSerialize.Format.json;
     protected String warcDir; //local FS directory for warcs
     protected PeriodicChecker report = new PeriodicChecker(100);
+    protected AtomicInteger docCount = new AtomicInteger(0);
     
     protected abstract PrintStream getThreadOutput(String baseDir, int threadNum);
     
@@ -170,6 +172,8 @@ public abstract class SaveCommonCrawlBase {
             }
             t.printStackTrace();
         }
+        docCount.addAndGet(docs.size());
+        
         return docs;
     }
     
@@ -198,7 +202,7 @@ public abstract class SaveCommonCrawlBase {
                     }
                     if (report.isTime()) {
                         System.out.println("On "+url+" #"+report.checkCount()); 
-                        //TODO: show exceptionCount once in a while
+                        //CONSIDER: show exceptionCount once in a while
                         //synchronized (exceptionCount) {
                         //    System.out.println(SparseVectors.toString(exceptionCount));
                         //}
@@ -216,6 +220,7 @@ public abstract class SaveCommonCrawlBase {
     
     public void writeCrawl(Iterable<String> warcList, String targetDir) {
         try {
+            FileUtil.ensureWriteable(new File(warcDir, "x"));
             if (config.warcFileLimit > 0) {
                 System.out.println("Limiting to first "+config.warcFileLimit+" WARC files.");
                 warcList = Iterables.limit(warcList, config.warcFileLimit);
@@ -243,5 +248,7 @@ public abstract class SaveCommonCrawlBase {
         }
         if (!failedFiles.isEmpty())
             System.err.println("\n\nFailed to download:\n"+Lang.stringList(failedFiles, "\n"));
+        System.err.flush();
+        System.out.println("Created "+docCount.get()+" documents");
     } 
 }

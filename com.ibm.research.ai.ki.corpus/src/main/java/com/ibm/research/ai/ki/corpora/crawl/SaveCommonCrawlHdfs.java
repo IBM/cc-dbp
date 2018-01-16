@@ -27,6 +27,8 @@ import com.ibm.reseach.ai.ki.nlp.types.*;
 import com.ibm.research.ai.ki.util.*;
 import com.ibm.research.ai.ki.util.FileUtil;
 
+import org.apache.commons.cli.*;
+import org.apache.commons.cli.Options;
 import org.apache.commons.io.*;
 import org.apache.hadoop.conf.*;
 import org.apache.hadoop.fs.*;
@@ -81,20 +83,43 @@ public class SaveCommonCrawlHdfs extends SaveCommonCrawlBase {
     
     /**
      * Example args:
-       hdfs://hostname:8020 /somewhere/june2017-warc.paths /somewhere/june2017-logs /common-crawl/june2017-docs.json.gz.b64
+       -hdfsBase hdfs://hostname:8020 
+       -urlList /somewhere/june2017-warc.paths 
+       -logDir /somewhere/june2017-logs 
+       -out /common-crawl/june2017-docs.json.gz.b64
+       -config cc-dbp/cc-dbp.properties
        OR
-       hdfs://hostname:8020 https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-43/warc.paths.gz /somewhere/june2017-logs /common-crawl/oct2017-docs.json.gz.b64
+       -hdfsBase hdfs://hostname:8020 
+       -urlList https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-43/warc.paths.gz 
+       -logDir /somewhere/june2017-logs 
+       -out /common-crawl/oct2017-docs.json.gz.b64
+       -config cc-dbp/cc-dbp.properties
      * @param args
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
-        String hdfsBase = args[0];
-        String warcUrlList = args[1];
-        String logDir = args[2];
-        String targetHdfs = args[3];
+        Options options = new Options();
+        options.addOption("config", true, "A RelexConfig in properties file format");   
+        options.addOption("urlList", true, "List of WARC urls, see http://commoncrawl.org/connect/blog/");
+        options.addOption("out", true, "The HDFS directory to create the dataset in");
+        options.addOption("logDir", true, "A directory to save log files in.");
+        options.addOption("hdfsBase", true, "Base for HDFS file system.");
+        CommandLineParser parser = new DefaultParser();
+        CommandLine cmd = null;
+        try {
+            cmd = parser.parse(options, args);  
+        } catch (ParseException pe) {
+            Lang.error(pe);
+        }
+        
+        String configProperties = cmd.getOptionValue("config");
+        String warcUrlList = cmd.getOptionValue("urlList");
+        String targetHdfs = cmd.getOptionValue("out");
+        String hdfsBase = cmd.getOptionValue("logDir");
+        String logDir = cmd.getOptionValue("hdfsBase");
         
         CommonCrawlConfig config = new CommonCrawlConfig();
-        config.fromProperties(PropertyLoader.loadProperties("cc-dbp/cc-dbp.properties"));
+        config.fromProperties(PropertyLoader.loadProperties(configProperties));
         SaveCommonCrawlHdfs scc = new SaveCommonCrawlHdfs(config, hdfsBase);
         scc.warcDir = logDir;
         scc.saveFormat = DocumentSerialize.formatFromName(targetHdfs);

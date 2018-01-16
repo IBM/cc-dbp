@@ -27,6 +27,8 @@ import com.ibm.reseach.ai.ki.nlp.types.*;
 import com.ibm.research.ai.ki.util.*;
 import com.ibm.research.ai.ki.util.FileUtil;
 
+import org.apache.commons.cli.*;
+import org.apache.commons.cli.Options;
 import org.apache.commons.io.*;
 import org.apache.hadoop.conf.*;
 import org.apache.hadoop.fs.*;
@@ -59,17 +61,30 @@ public class SaveCommonCrawl extends SaveCommonCrawlBase {
     
     /**
      * Example args:
-       /somewhere/june2017-warc.paths /somewhere/june2017-docs.json.gz.b64
+       -urlList /somewhere/june2017-warc.paths -out /somewhere/june2017-docs.json.gz.b64 -config cc-dbp/cc-dbp.properties
      * @param args
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
-        String warcUrlList = args[0];
-        String targetDir = args[1];
+        Options options = new Options();
+        options.addOption("config", true, "A RelexConfig in properties file format");   
+        options.addOption("urlList", true, "List of WARC urls, see http://commoncrawl.org/connect/blog/");
+        options.addOption("out", true, "The directory to create the dataset in");
+        CommandLineParser parser = new DefaultParser();
+        CommandLine cmd = null;
+        try {
+            cmd = parser.parse(options, args);  
+        } catch (ParseException pe) {
+            Lang.error(pe);
+        }
+        
+        String configProperties = cmd.getOptionValue("config");
+        String warcUrlList = cmd.getOptionValue("urlList");
+        String targetDir = cmd.getOptionValue("out");
         
         CommonCrawlConfig config = new CommonCrawlConfig();
-        config.fromProperties(PropertyLoader.loadProperties("cc-dbp/cc-dbp.properties"));
-        //TODO: support passing name of properties file
+        config.fromProperties(PropertyLoader.loadProperties(configProperties));
+
         SaveCommonCrawl scc = new SaveCommonCrawl(config);
         scc.warcDir = targetDir+"-logs";
         scc.saveFormat = DocumentSerialize.formatFromName(targetDir);
