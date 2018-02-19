@@ -2,6 +2,8 @@
 
 A dataset for knowledge base population research using Common Crawl and DBpedia.
 
+### Quickstart
+
 For a quick introduction see [configSmall.properties](configSmall.properties) and [createSmall.sh](createSmall.sh). This will download 1/80th of the December 2017 Common Crawl and create a KBP dataset from it.
 
 The parameter warcFileLimit in configSmall.properties limits the Common Crawl dataset to 1/80th (1000 of 80000 files). If this parameter is changed then the maxNodeCorpusCount parameter should probably also be changed by a proportional amount.
@@ -27,7 +29,8 @@ The dataset can also be built using Spark. For this option:
   1. Use [GazetteerPreprocess](com.ibm.research.ai.ki.spark/src/main/java/com/ibm/research/ai/ki/spark/GazetteerPreprocess.java) rather than GazetteerEDL to create the annotated Common Crawl. 
   1. Finally, use [RelexBuildDataset](com.ibm.research.ai.ki.spark/src/main/java/com/ibm/research/ai/ki/spark/RelexBuildDataset.java) rather than KBPBuildDataset to create the context sets.
 
-
+### Multi-lingual Support
+  
 The dataset construction also supports using any language from DBpedia. See configSmall-de.properties, changes from configSmall.properties are commented with "German language". The script createSmall-de.sh is the same as createSmall.sh, it just points to the different proeperties file.
 
 ## JSON Document Format
