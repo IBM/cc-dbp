@@ -27,3 +27,5 @@ The dataset can also be built using Spark. For this option:
   1. Use [GazetteerPreprocess](com.ibm.research.ai.ki.spark/src/main/java/com/ibm/research/ai/ki/spark/GazetteerPreprocess.java) rather than GazetteerEDL to create the annotated Common Crawl. 
   1. Finally, use [RelexBuildDataset](com.ibm.research.ai.ki.spark/src/main/java/com/ibm/research/ai/ki/spark/RelexBuildDataset.java) rather than KBPBuildDataset to create the context sets.
 
+
+The dataset construction also supports using any language from DBpedia. See configSmall-de.properties, changes from configSmall.properties are commented with "German language". The script createSmall-de.sh is the same as createSmall.sh, it just points to the different proeperties file.
