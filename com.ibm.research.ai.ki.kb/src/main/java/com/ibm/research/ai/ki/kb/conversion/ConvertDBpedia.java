@@ -159,8 +159,8 @@ public class ConvertDBpedia {
             uri = "dbo:"+uri.substring("http://dbpedia.org/ontology/".length());
         } else if (uri.startsWith("http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#")) {
             uri = "odp:"+uri.substring("http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#".length());
-        } else if (uri.startsWith("http://dbpedia.org/resource/")) {
-            uri = "dbr:"+uri.substring("http://dbpedia.org/resource/".length());
+        } else if (uri.contains("dbpedia.org/resource/")) {
+            uri = "dbr:"+uri.substring(uri.indexOf("dbpedia.org/resource/")+"dbpedia.org/resource/".length());
         } else if (uri.startsWith("http://schema.org/")) {
             uri = "sco:"+uri.substring("http://schema.org/".length());
         } else if (uri.startsWith("http://www.wikidata.org/entity/")) {
@@ -334,14 +334,13 @@ public class ConvertDBpedia {
                     String rel = trip[1];
                     //we are taking only the year portion of the date
                     rel = date2year(rel);
-                    if (rel.startsWith("http://dbpedia.org/ontology/")) {
-                        rel = "dbo:"+rel.substring("http://dbpedia.org/ontology/".length());
-                    }
+                    rel = useNamespacePrefix(rel);
+                    
                     //skip mediators
                     if (subj.indexOf("__") != -1 || obj.indexOf("__") != -1)
                         continue;
-                    if (subj.startsWith("http://dbpedia.org/resource/")) {
-                        subj = "dbr:"+subj.substring("http://dbpedia.org/resource/".length());
+                    if (subj.contains("dbpedia.org/resource/")) {
+                        subj = useNamespacePrefix(subj);
                         dbrs.add(subj);
                     } else {
                         System.err.println("Unexpected subject: "+subj);
@@ -350,8 +349,8 @@ public class ConvertDBpedia {
                     
                     //CONSIDER: if the relation is http://xmlns.com/foaf/0.1/nick then split on ',' and ';'
                     
-                    if (obj.startsWith("http://dbpedia.org/resource/")) {
-                        obj = "dbr:"+obj.substring("http://dbpedia.org/resource/".length());
+                    if (obj.contains("dbpedia.org/resource")) {
+                        obj = useNamespacePrefix(obj);
                         dbrs.add(obj);
                     } else if (obj.startsWith("\"")) {
                         List<String> labels = new ArrayList<>();
@@ -420,15 +419,13 @@ public class ConvertDBpedia {
         //open up labels and write dbo: labels
         Map<String,MutableDouble> labelCounts = new HashMap<>();
         for (String[] trip : NTriples.getProperties(config.labelsFile())) {
-            String subj = trip[0];
-            if (subj.startsWith("http://dbpedia.org/resource/")) {
-                subj = "dbr:"+subj.substring("http://dbpedia.org/resource/".length());
-                if (dbrs.contains(subj)) {
-                    SparseVectors.increase(labelCounts, subj, 1.0);
-                    labelsOut.println(subj+"\t"+NTriples.getStringLiteral(trip[2]));
-                }
+            String subj = useNamespacePrefix(trip[0]);
+            if (dbrs.contains(subj)) {
+                SparseVectors.increase(labelCounts, subj, 1.0);
+                labelsOut.println(subj+"\t"+NTriples.getStringLiteral(trip[2]));
             }
         }
+        System.out.println("Labels given for: "+labelCounts.size());
         System.out.println("No labels for: "+(dbrs.size()-labelCounts.size())+" creating labels from URIs.");
         for (String dbr : dbrs) {
             if (!labelCounts.containsKey(dbr)) {
@@ -498,3 +495,4 @@ public class ConvertDBpedia {
         }
     }
 }
+
