@@ -91,6 +91,19 @@ dbr: The_Beatles | dbr: Tony_Sheridan | dbo: Group | dbo: Artist | [150,161) | [
 dbr: Dion_Waiters | dbr: Shooting_guard | dbo: Athlete | unk | [65,77) | [50,64) | >dbo:position | During the season Irving was accused by Cavaliers **shooting guard** **Dion Waiters** of playing buddy ball with power forward Tristan Thompson which led to a rift between them. | http:// 300lbsofsportsknowledge .com/tag/dan-gilbert/
 dbr: Dion_Waiters | dbr: Shooting_guard | dbo: Athlete | unk | [88,100) | [73,87) | >dbo:position | The Cavaliers also have youngsters in power forward Tristan Thompson and **shooting guard** **Dion Waiters** who will look to be on board as members of the new James Gang in Cleveland. | http:// 300lbsofsportsknowledge .com/tag/stan-van-gundy/
 
+Since the table is a bit hard to read, here is a single row transposed.
+
+Header | One Row Of TSV File 
+--- | --- 
+**ID 1** | dbr:The_Beatles
+**ID 2** | dbr:Tony_Sheridan
+**Type 1** | dbo:Group 
+**Type 2** | dbo:Artist
+**Char Span 1** | [150,161)
+**Char Span 2** | [172,185)
+**Relations** | <dbo:associatedBand,<odp:isMemberOf,<dbo:associatedMusicalArtist,<odp:hasMember
+**Context** | Ain't She Sweet (album) - Wikipedia, the free encyclopedia Ain't She Sweet was an American album featuring four tracks recorded in Hamburg in 1961 by **The Beatles** featuring **Tony Sheridan** (except for the title song with vocal ... Ain't She Sweet by Susan Elizabeth Phillips  Reviews ... Ain't She Sweet has 13,958 ratings and 716 reviews. 
+**URL** | http://2snowflakes.blogspot.com/2015/05/ 
 
 To see examples of context sets for node pairs that are related use:
 ```
