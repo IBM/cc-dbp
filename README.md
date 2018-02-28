@@ -45,7 +45,7 @@ This command gives the tenth document in part-0:
 
 An example of the JSON format is given below. The id of the document is the URL from the WARC file. Then the text of the document is given, this is the result of processing the html with boilerpipe. 
 
-The annotations of the document are spans of text with some meaning attached, they are organized by type. The only annotations in the original documents by default are the LinkAnnotations. Each annotation has an 'id' and an 'anno' field, that gives the content of the annotation. The 'id' field exists so that annotations can refer to other annotations (such as a dependency parse). The 'anno' part will always contain 'start' and 'end' character offsets. In the case of LinkAnnotation, it also contains the target of the link. 
+The annotations of the document are spans of text with some meaning attached, they are organized by type. The only annotations in the original documents by default are the LinkAnnotations, which are the hyperlinks from the html. Each annotation has an 'id' and an 'anno' field, that gives the content of the annotation. The 'id' field exists so that annotations can refer to other annotations (such as a dependency parse). The 'anno' part will always contain 'start' and 'end' character offsets. In the case of LinkAnnotation, it also contains the target of the link. 
 
 The 'structures' contain metadata that applies to the document as a whole, rather than any particular span. The only document structure is the 'source' which gives the WARC file that the document is from.
 
