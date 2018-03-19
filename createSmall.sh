@@ -7,7 +7,7 @@ baseDir=$1
 config=configSmall.properties
 warcUrlList=https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-51/warc.paths.gz
 
-mvn clean compile package
+mvn clean compile package install
 
 cd com.ibm.research.ai.ki.kb
 mvn assembly:single
