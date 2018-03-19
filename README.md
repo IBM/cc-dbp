@@ -14,7 +14,7 @@ The warcUrlList variable in createSmall.sh selects the particular version of Com
 The createSmall.sh script proceeds in steps
 
   1. Downloads the DBpedia files and creates an initial subset using the [selected relations](com.ibm.research.ai.ki.kb/src/main/resources/relationSample.txt)
-  1. Downloads Common Crawl and filters it to text documents in the selected langauge
+  1. Downloads Common Crawl and filters it to text documents in the selected language
   1. Finds the counts in the corpus of each label in the subset of DBpedia
   1. Finalizes construction of the DBpedia subset, including filtering out nodes whose labels are too frequent
   1. Annotates Common Crawl with the node mentions of the knowledge base - found by gazetteer matching
@@ -31,7 +31,7 @@ The dataset can also be built using Spark. For this option:
 
 ### Multi-lingual Support
   
-The dataset construction also supports using any language from DBpedia. See configSmall-de.properties, changes from configSmall.properties are commented with "German language". The script createSmall-de.sh is the same as createSmall.sh, it just points to the different proeperties file.
+The dataset construction also supports using any language from DBpedia. See configSmall-de.properties, changes from configSmall.properties are commented with "German language". The script `createSmall-de.sh` is the same as `createSmall.sh`, it just points to the different properties file.
 
 ## JSON Document Format
 
