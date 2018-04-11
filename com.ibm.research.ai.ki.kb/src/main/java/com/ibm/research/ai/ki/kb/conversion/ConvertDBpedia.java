@@ -101,8 +101,12 @@ public class ConvertDBpedia {
         if (new File(kbDir, KBFiles.idCountsTsv).exists()) {
             System.out.println("Using "+KBFiles.idCountsTsv);
             for (String line : FileUtil.getLines(new File(kbDir, KBFiles.idCountsTsv).getAbsolutePath())) {
-                int space = Math.max(line.lastIndexOf(' '), line.lastIndexOf('\t'));
-                ids.add(line.substring(0,space).trim());
+                try {
+                    int space = Math.max(line.lastIndexOf(' '), line.lastIndexOf('\t'));
+                    ids.add(line.substring(0,space).trim());
+                } catch (Exception e) {
+                    System.err.println("Skipping bad line in "+KBFiles.idCountsTsv+": "+line);
+                }
             }
         } else {
             for (String[] trip : new SimpleTsvIterable(new File(kbDir, KBFiles.triplesTsv))) {

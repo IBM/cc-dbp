@@ -8,7 +8,7 @@ set -o errexit
 baseDir=$1
 
 #CONSIDER: take from command line
-config=configSmall.properties
+config=config.properties
 warcUrlList=https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-51/warc.paths.gz
 
 mvn clean compile package

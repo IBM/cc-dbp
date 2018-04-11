@@ -38,6 +38,8 @@ import com.ibm.research.ai.ki.util.*;
 public class BuildGazetteer {
     static class Node {
         Node(String id) {
+            if (id.indexOf('\t') != -1 || id.indexOf('\n') != -1)
+                throw new IllegalArgumentException("Node IDs must not contain tabs or newlines");
             this.id = id;
         }
         String id;

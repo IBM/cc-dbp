@@ -90,6 +90,35 @@ public class GazetteerEDL {
         }
     }
     
+    static class MultiFileOut {
+        MultiFileOut(File outDir) {
+            this.outDir = outDir;
+        }
+        File outDir;
+        PrintStream out = null;
+        int partNum = -1;
+        int outCount = -1;
+        void println(String sd) {
+            if (out == null) {
+                ++partNum;
+                out = FileUtil.getFilePrintStream(new File(outDir, "part-"+partNum).getAbsolutePath());
+                outCount = 0;
+            }
+            
+            ++outCount;
+            out.println(sd);
+            
+            if (outCount > 50000) {
+                out.close();
+                out = null;
+            }
+        }
+        void close() {
+            if (out != null)
+                out.close();
+        }
+    }
+    
     /**
      * Non-spark version
      * @param gazetteerFile
@@ -102,7 +131,8 @@ public class GazetteerEDL {
         Object2IntOpenHashMap<String> id2count = idCountsTsvFile != null ? new Object2IntOpenHashMap<String>() : null;
         
         DocumentSerialize.Format format = outputFile != null ? DocumentSerialize.formatFromName(outputFile.getName()) : null;
-        PrintStream out = outputFile != null ? FileUtil.getFilePrintStream(outputFile.getAbsolutePath()) : null;
+        //PrintStream out = outputFile != null ? FileUtil.getFilePrintStream(outputFile.getAbsolutePath()) : null;
+        MultiFileOut out = outputFile != null ? new MultiFileOut(outputFile) : null;
         
         BlockingThreadedExecutor threads = new BlockingThreadedExecutor(5);
         GazetteerEDL edl = new GazetteerEDL(gazetteerFile.getAbsolutePath());

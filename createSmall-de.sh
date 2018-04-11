@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#stop at first error, unset variables are errors
+set -o nounset
+set -o errexit
+
 # Base directory to save the cc-dbp dataset in
 baseDir=$1
 

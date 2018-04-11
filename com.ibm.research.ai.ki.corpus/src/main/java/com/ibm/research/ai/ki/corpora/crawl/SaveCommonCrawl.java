@@ -82,6 +82,11 @@ public class SaveCommonCrawl extends SaveCommonCrawlBase {
         String warcUrlList = cmd.getOptionValue("urlList");
         String targetDir = cmd.getOptionValue("out");
         
+        if (new File(targetDir).exists() && new File(targetDir).list().length > 0) {
+            System.out.println("Skipping Common Crawl download, using existing "+targetDir);
+            return;
+        }
+        
         CommonCrawlConfig config = new CommonCrawlConfig();
         config.fromProperties(PropertyLoader.loadProperties(configProperties));
 
