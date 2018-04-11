@@ -6,12 +6,13 @@ set -o errexit
 
 # Base directory to save the cc-dbp dataset in
 baseDir=$1
+# Configuration file to use
+config=${2:-config.properties}
 
 #CONSIDER: take from command line
-config=config.properties
 warcUrlList=https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-51/warc.paths.gz
 
-mvn clean compile package
+mvn clean compile package install
 
 cd com.ibm.research.ai.ki.kb
 mvn assembly:single
