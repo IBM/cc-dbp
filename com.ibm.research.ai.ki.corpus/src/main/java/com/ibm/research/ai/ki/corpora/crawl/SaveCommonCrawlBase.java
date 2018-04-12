@@ -101,7 +101,24 @@ public abstract class SaveCommonCrawlBase {
     
     public List<Document> getDocuments(String sourceFile, String url, int tryCount) {
         List<Document> docs = new ArrayList<>();
-        try (InputStream is = new URL(url).openStream()) {
+        URLConnection conn = null;
+        try {
+            conn = new URL(url).openConnection();
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
+        } catch (Exception e) {
+            if (tryCount < 3) {
+                try { Thread.sleep(2000); } catch (Throwable t) {}
+                return getDocuments(sourceFile, url, tryCount+1);
+            } else {
+                failedFiles.add(sourceFile);
+                SparseVectors.increase(exceptionCount, "FAILURE:"+e.getMessage(), 1);
+                return docs;
+            }
+        }
+        
+        try (InputStream is = conn.getInputStream()) {
+            
             InputStream stream = is;
             if (url.endsWith("gz"))
                 stream = new GZIPInputStream(stream);
@@ -135,8 +152,7 @@ public abstract class SaveCommonCrawlBase {
                     if (score >= config.minLanguageConfidence) {
                         docs.add(doc);
                     }
-                } catch (java.net.SocketException se) {
-                    //CONSIDER: maybe we should try re-reading the url?
+                } catch (java.net.SocketException | javax.net.ssl.SSLException | java.net.SocketTimeoutException se) {
                     synchronized (exceptionCount) {
                         SparseVectors.increase(exceptionCount, "WARCLoop:"+se.getMessage(), 1);
                     }
@@ -146,29 +162,20 @@ public abstract class SaveCommonCrawlBase {
                         failedFiles.add(sourceFile);
                         SparseVectors.increase(exceptionCount, "FAILURE:"+se.getMessage(), 1);
                     }
-                    se.printStackTrace(); 
-                } catch (javax.net.ssl.SSLException se) {
-                    synchronized (exceptionCount) {
-                        SparseVectors.increase(exceptionCount, "WARCLoop:"+se.getMessage(), 1);
-                    }
-                    if (tryCount < 3) {
-                        return getDocuments(sourceFile, url, tryCount+1);
-                    } else {
-                        failedFiles.add(sourceFile);
-                        SparseVectors.increase(exceptionCount, "FAILURE:"+se.getMessage(), 1);
-                    }
+                    System.err.println("On file "+sourceFile);
                     se.printStackTrace();
                 } catch (Throwable t) {
                     synchronized (exceptionCount) {
                         SparseVectors.increase(exceptionCount, "WARCLoop:"+t.getMessage(), 1);
                     }
+                    System.err.println("On file "+sourceFile);
                     t.printStackTrace();
                 }
             }
         } catch (Throwable t) {
             //keep track of how many errors of each type
             synchronized (exceptionCount) {
-                SparseVectors.increase(exceptionCount, "URLRead:"+t.getMessage(), 1);
+                SparseVectors.increase(exceptionCount, "URLRead: "+t.getClass().getName()+":"+t.getMessage(), 1);
             }
             t.printStackTrace();
         }
@@ -242,12 +249,15 @@ public abstract class SaveCommonCrawlBase {
         } catch (Exception e) {
             Lang.error(e);
         }
-        System.err.println("Exception counts:\n");
-        synchronized(exceptionCount) {
+        if (!exceptionCount.isEmpty()) {
+            System.err.println("Exception counts:\n");
             System.err.println(SparseVectors.toString(exceptionCount));
+            FileUtil.writeFileAsString(new File(this.warcDir, "exceptionCounts.txt"), SparseVectors.toString(exceptionCount));
         }
-        if (!failedFiles.isEmpty())
+        if (!failedFiles.isEmpty()) {
             System.err.println("\n\nFailed to download:\n"+Lang.stringList(failedFiles, "\n"));
+            FileUtil.writeFileAsString(new File(this.warcDir, "failedFiles.txt"), Lang.stringList(failedFiles, "\n"));
+        }
         System.err.flush();
         System.out.println("Created "+docCount.get()+" documents");
     } 

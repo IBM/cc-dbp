@@ -13,6 +13,8 @@ import com.ibm.research.ai.ki.util.*;
 import com.ibm.research.ai.ki.util.io.*;
 import com.ibm.research.ai.ki.util.parallel.*;
 
+import org.apache.commons.cli.*;
+
 /**
  * Baseline EDL using gazetteer matching
  * @author mrglass
@@ -131,6 +133,9 @@ public class GazetteerEDL {
         Object2IntOpenHashMap<String> id2count = idCountsTsvFile != null ? new Object2IntOpenHashMap<String>() : null;
         
         DocumentSerialize.Format format = outputFile != null ? DocumentSerialize.formatFromName(outputFile.getName()) : null;
+        if (outputFile != null && format == null) {
+            throw new IllegalArgumentException("Could not determine format from name: "+outputFile.getName()+" try extension of json.gz.b64");
+        }
         //PrintStream out = outputFile != null ? FileUtil.getFilePrintStream(outputFile.getAbsolutePath()) : null;
         MultiFileOut out = outputFile != null ? new MultiFileOut(outputFile) : null;
         
@@ -151,8 +156,8 @@ public class GazetteerEDL {
                             }
                         }
                     }
-                    String sd = DocumentSerialize.toString(d, format);
                     if (out != null) {
+                        String sd = DocumentSerialize.toString(d, format);
                         synchronized (out) {
                             out.println(sd);
                         }
@@ -172,8 +177,29 @@ public class GazetteerEDL {
         }
     }
     
+    
     public static void main(String[] args) {
-        process(new File(args[0]), new File(args[1]), new File(args[2]), 
-                args.length > 3 ? new File(args[3]) : null);
+        Options options = new Options();
+        options.addOption("gazEntries", true, "The serialized gazetteer entries");   
+        options.addOption("in", true, "The input corpus");
+        options.addOption("out", true, "The directory to create the annotated corpus");
+        options.addOption("idCounts", true, "File to save id counts to");
+        CommandLineParser parser = new DefaultParser();
+        CommandLine cmd = null;
+        try {
+            cmd = parser.parse(options, args);  
+        } catch (ParseException pe) {
+            Lang.error(pe);
+        }
+        
+        if (!cmd.hasOption("gazEntries") || !new File(cmd.getOptionValue("gazEntries")).exists()) {
+            throw new IllegalArgumentException("option -gazEntries must supply a gazetteer file");
+        }
+        
+        String out = cmd.getOptionValue("out");
+        String idCounts = cmd.getOptionValue("idCounts");
+        process(new File(cmd.getOptionValue("gazEntries")), new File(cmd.getOptionValue("in")), 
+                out != null ? new File(out) : null, 
+                idCounts != null ? new File(idCounts) : null);
     }
 }

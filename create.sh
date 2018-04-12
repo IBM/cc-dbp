@@ -4,13 +4,14 @@
 set -o nounset
 set -o errexit
 
+scriptDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 # Base directory to save the cc-dbp dataset in
 baseDir=$1
 # Configuration file to use
 config=${2:-config.properties}
-
-#CONSIDER: take from command line
-warcUrlList=https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-51/warc.paths.gz
+#the list of warc files, get from http://commoncrawl.org/connect/blog/
+warcUrlList=${3:-https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-51/warc.paths.gz}
 
 mvn clean compile package install
 
@@ -34,7 +35,7 @@ com.ibm.research.ai.ki.corpora.crawl.SaveCommonCrawl -config $config -urlList $w
 
 # get node corpus counts by baseline EDL
 java -Xmx4G -cp com.ibm.research.ai.ki.kbp/target/kbp-1.0.0-SNAPSHOT-jar-with-dependencies.jar \
-com.ibm.research.ai.ki.kbp.GazetteerEDL $baseDir/kb/gazEntries.ser.gz $baseDir/docs.json.gz.b64 $baseDir/docs-gaz.json.gz.b64 $baseDir/kb/idCounts.tsv
+com.ibm.research.ai.ki.kbp.GazetteerEDL -gazEntries $baseDir/kb/gazEntries.ser.gz -in $baseDir/docs.json.gz.b64 -idCounts $baseDir/kb/idCounts.tsv
 
 # create remaining KB files
 java -Xmx4G -cp com.ibm.research.ai.ki.kb/target/kb-1.0.0-SNAPSHOT-jar-with-dependencies.jar \
@@ -42,7 +43,7 @@ com.ibm.research.ai.ki.kb.conversion.ConvertDBpedia -config $config -kb $baseDir
 
 # annotate corpus with baseline EDL
 java -Xmx4G -cp com.ibm.research.ai.ki.kbp/target/kbp-1.0.0-SNAPSHOT-jar-with-dependencies.jar \
-com.ibm.research.ai.ki.kbp.GazetteerEDL $baseDir/kb/gazEntriesFiltered.ser.gz $baseDir/docs.json.gz.b64 $baseDir/docs-gaz.json.gz.b64
+com.ibm.research.ai.ki.kbp.GazetteerEDL -gazEntries $baseDir/kb/gazEntriesFiltered.ser.gz -in $baseDir/docs.json.gz.b64 -out $baseDir/docs-gaz.json.gz.b64
 
 # baseline context set construction
 java -Xmx4G -cp com.ibm.research.ai.ki.kbp/target/kbp-1.0.0-SNAPSHOT-jar-with-dependencies.jar \
