@@ -387,7 +387,7 @@ public class ConvertDBpedia {
                         } else {
                             obj = cleanStringLiteral(obj);
                             if (obj != null) {
-                                labels.add(obj);
+                                labels.add(obj.replace('_', ' '));
                             }
                         }
                         
