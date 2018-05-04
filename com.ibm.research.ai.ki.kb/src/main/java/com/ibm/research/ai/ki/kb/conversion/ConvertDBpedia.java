@@ -326,7 +326,7 @@ public class ConvertDBpedia {
         Set<String> noDupTriples = new HashSet<String>();
         //iterate over mappingbased* and write triples
         //  while building set of dbo: and write out dbl: and uri:
-        for (File f : new File[] {config.objectsFile(), config.labelsFile()}) {
+        for (File f : new File[] {config.objectsFile(), config.literalsFile()}) {
             for (String[] trip : NTriples.getProperties(f)) {
                 if (goodRelations.contains(trip[1])) {
                     String subj = trip[0];
