@@ -53,6 +53,32 @@ public class RelexMention implements IRelexMention {
 	
 	public String documentId;
 	
+    public static final String ARG1PLACEHOLDER = "ARGONE";
+    public static final String ARG2PLACEHOLDER = "ARGTWO";
+    public void convertToPlaceholders() {
+        //alter sentence and span1, span2 to have placeholders rather than the words
+        String[] parts = new String[3];
+        if (span1.start < span2.start) {
+            parts[0] = sentence.substring(0, span1.start);
+            parts[1] = sentence.substring(span1.end, span2.start);
+            parts[2] = sentence.substring(span2.end, sentence.length());
+            sentence = parts[0] + ARG1PLACEHOLDER + parts[1] + ARG2PLACEHOLDER + parts[2];
+            span1.start = parts[0].length();
+            span1.end = span1.start + ARG1PLACEHOLDER.length();
+            span2.start = parts[0].length() + ARG1PLACEHOLDER.length() + parts[1].length();
+            span2.end = span2.start + ARG2PLACEHOLDER.length();
+        } else {
+            parts[0] = sentence.substring(0, span2.start);
+            parts[1] = sentence.substring(span2.end, span1.start);
+            parts[2] = sentence.substring(span1.end, sentence.length());
+            sentence = parts[0] + ARG2PLACEHOLDER + parts[1] + ARG1PLACEHOLDER + parts[2];
+            span2.start = parts[0].length();
+            span2.end = span2.start + ARG2PLACEHOLDER.length();
+            span1.start = parts[0].length() + ARG2PLACEHOLDER.length() + parts[1].length();
+            span1.end = span1.start + ARG1PLACEHOLDER.length();
+        }
+    }	
+	
 	protected void setFields(String[] tsvparts) {
         if (tsvparts.length != 8 && tsvparts.length != 9)
             throw new IllegalArgumentException("Bad tsv line "+tsvparts.length+": "+Lang.stringList(tsvparts, "\t"));

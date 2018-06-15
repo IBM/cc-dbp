@@ -55,6 +55,7 @@ public class SaveCommonCrawl extends SaveCommonCrawlBase {
 
     @Override
     protected PrintStream getThreadOutput(String baseDir, int threadNum) {
+        //CONSIDER: support resuming by making sure to not overwrite a file (creating a new file instead)
         return FileUtil.getFilePrintStream(new File(baseDir, "part-"+threadNum).getAbsolutePath());
     }
 

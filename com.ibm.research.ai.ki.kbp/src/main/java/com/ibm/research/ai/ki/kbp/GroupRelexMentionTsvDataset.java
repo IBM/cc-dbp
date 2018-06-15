@@ -31,13 +31,14 @@ import com.ibm.research.ai.ki.util.*;
 public class GroupRelexMentionTsvDataset {
 	static final double maxFileSize = 1000000000;
 	
-	private static void groupFile(RelexConfig config, String f) {
+	
+	
+	private static void groupFile(IRelexMention m, RelexConfig config, String f) {
 		//build a map idPair->mentionSet and overwrite it
 		Map<String,ArrayList<String>> id2line = new HashMap<>();
 		for (String line : FileUtil.getLines(f)) {
-			int idSplit = line.indexOf('\t', line.indexOf('\t')+1);
-			String idPair = line.substring(0, idSplit);
-			HashMapUtil.addAL(id2line, idPair, line);
+		    m.fromString(line);
+			HashMapUtil.addAL(id2line, m.groupId(), line);
 		}
 		PrintStream out = FileUtil.getFilePrintStream(f);
 		Set<String> dedup = new HashSet<>();
@@ -56,6 +57,16 @@ public class GroupRelexMentionTsvDataset {
 
 	//CONSIDER: limit number of open files - some systems may have low 'ulimit -n'
 	public static void splitAndSort(RelexConfig config, File tsvFile) {
+	    IRelexMention m = null;
+	    try {
+    	    IRelexDatasetManager rdm = config.getManager();
+            Class<IRelexMention> mc = rdm.getMentionClass();
+    	    m = mc.newInstance();
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        throw new Error("Could not construct mention class from relex config: "+e.getMessage());
+	    }
+	    
 		long len = tsvFile.length();
 		int numParts = (int)Math.ceil((double)len/maxFileSize);
 		if (numParts == 1) {
@@ -64,7 +75,7 @@ public class GroupRelexMentionTsvDataset {
 		        Files.move(Paths.get(tsvFile.getAbsolutePath()), Paths.get(onePart), 
 		                StandardCopyOption.REPLACE_EXISTING);
 		    } catch (Exception e) {Lang.error(e);}
-			groupFile(config, onePart);
+			groupFile(m, config, onePart);
 			return;
 		}
 		
@@ -73,15 +84,16 @@ public class GroupRelexMentionTsvDataset {
 			outs[i] = FileUtil.getFilePrintStream(FileUtil.removeExtension(tsvFile.getAbsolutePath())+"-part"+i+".tsv");
 		
 		for (String line : FileUtil.getLines(tsvFile.getAbsolutePath())) {
-			int idSplit = line.indexOf('\t', line.indexOf('\t')+1);
-			String idPair = line.substring(0, idSplit);
-			int whichPart = new Random(idPair.hashCode()).nextInt(numParts);
+			m.fromString(line);
+			int whichPart = new Random(m.groupId().hashCode()).nextInt(numParts);
 			outs[whichPart].println(line);
 		}
 		
 		for (int i = 0; i < outs.length; ++i) {
 			outs[i].close();
-			groupFile(config, FileUtil.removeExtension(tsvFile.getAbsolutePath())+"-part"+i+".tsv");
+		}
+		for (int i = 0; i < outs.length; ++i) {
+		    groupFile(m, config, FileUtil.removeExtension(tsvFile.getAbsolutePath())+"-part"+i+".tsv");
 		}
 		tsvFile.delete();
 	}

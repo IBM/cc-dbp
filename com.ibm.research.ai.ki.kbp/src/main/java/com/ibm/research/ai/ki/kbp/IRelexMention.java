@@ -61,4 +61,6 @@ public interface IRelexMention extends Serializable {
 	 * @return
 	 */
 	public String toSupportString();
+	
+	public void convertToPlaceholders();
 }

@@ -100,6 +100,9 @@ public abstract class SaveCommonCrawlBase {
     List<String> failedFiles = new ArrayList<>();
     
     public List<Document> getDocuments(String sourceFile, String url, int tryCount) {
+        if (tryCount > 0) {
+            try { Thread.sleep(2000); } catch (Throwable t) {}
+        }
         List<Document> docs = new ArrayList<>();
         URLConnection conn = null;
         try {
@@ -108,7 +111,6 @@ public abstract class SaveCommonCrawlBase {
             conn.setReadTimeout(5000);
         } catch (Exception e) {
             if (tryCount < 3) {
-                try { Thread.sleep(2000); } catch (Throwable t) {}
                 return getDocuments(sourceFile, url, tryCount+1);
             } else {
                 failedFiles.add(sourceFile);
@@ -130,7 +132,10 @@ public abstract class SaveCommonCrawlBase {
                     if (!isResponse(wr))
                         continue;
                     byte[] content = IOUtils.toByteArray(wr.getPayloadContent());
-                    String str = new String(content, CharsetDetect.getCharsetFromBytes(content));
+                    String str = null;
+                    try {
+                        str = new String(content, CharsetDetect.getCharsetFromBytes(content));
+                    } catch (java.io.UnsupportedEncodingException uee) {} //that's fine
                     if (str == null || str.isEmpty())
                         continue;
                     Document doc = null;
@@ -172,6 +177,18 @@ public abstract class SaveCommonCrawlBase {
                     t.printStackTrace();
                 }
             }
+        } catch (java.net.SocketException | javax.net.ssl.SSLException | java.net.SocketTimeoutException se) {
+            synchronized (exceptionCount) {
+                SparseVectors.increase(exceptionCount, "URLRead:"+se.getMessage(), 1);
+            }
+            if (tryCount < 3) {
+                return getDocuments(sourceFile, url, tryCount+1);
+            } else {
+                failedFiles.add(sourceFile);
+                SparseVectors.increase(exceptionCount, "FAILURE:"+se.getMessage(), 1);
+            }
+            System.err.println("On file "+sourceFile);
+            se.printStackTrace();
         } catch (Throwable t) {
             //keep track of how many errors of each type
             synchronized (exceptionCount) {

@@ -174,6 +174,11 @@ public class RelexConfig extends PropertyStruct {
 	public String tokenizerPipelineFile = null;
 	//CONSIDER: max token gap
 	
+	/**
+     * Turn arguments into placeholders, so actual arguments are not used as features.
+     */
+    public boolean placeholdersForArguments = false;
+	
 	/**************************************
 	 * Used in vocabulary construction
 	 **************************************
