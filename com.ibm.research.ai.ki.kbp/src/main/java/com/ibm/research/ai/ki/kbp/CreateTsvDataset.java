@@ -355,7 +355,7 @@ public class CreateTsvDataset implements IRelexTsv<RelexMention> {
 			BlockingThreadedExecutor threads = new BlockingThreadedExecutor(5);
 			for (Document doc : docs) {
 			    if (report.isTime()) {
-			        System.out.println("CreateTsDataset.process On document "+report.checkCount());
+			        System.out.println("CreateTsvDataset.process On document "+report.checkCount());
 			    }
 				threads.execute(() -> {
 					List<RelexMention> ms = getMentions(doc);
