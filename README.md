@@ -109,3 +109,31 @@ To see examples of context sets for node pairs that are related use:
 ```
 awk  -F $'\t' '$7!=""' dataset/contextSets/contexts-part0.tsv | head
 ```
+
+## Cite
+
+If you use this dataset please cite:
+
+```
+@inproceedings{glass2018ccdbp,
+  title={A Dataset for Web-Scale Knowledge Base Population},
+  author={Glass, Michael and Gliozzo, Alfio},
+  booktitle={European Semantic Web Conference},
+  pages={256--271},
+  year={2018},
+  organization={Springer}
+}
+```
+
+Or if you use the unary portion please cite:
+
+```
+@inproceedings{glass2018unary,
+  title={Discovering Implicit Knowledge with Unary Relations},
+  author={Glass, Michael and Gliozzo, Alfio},
+  booktitle={Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)},
+  volume={1},
+  pages={1585--1594},
+  year={2018}
+}
+```
