@@ -4,11 +4,11 @@ A dataset for knowledge base population research using Common Crawl and DBpedia.
 
 ### Quickstart
 
-For a quick introduction see [configSmall.properties](configSmall.properties) and [createSmall.sh](createSmall.sh). This will download 1/80th of the December 2017 Common Crawl and create a KBP dataset from it.
+For a quick introduction see [configSmall.properties](configSmall.properties) and [createSmall.sh](createSmall.sh), which calls [create.sh](create.sh). This will download 1/80th of the December 2017 Common Crawl and create a KBP dataset from it. For [createSmall.sh](createSmall.sh) you should provide a single argument, the directory to save the dataset.
 
 The parameter warcFileLimit in configSmall.properties limits the Common Crawl dataset to 1/80th (1000 of 80000 files). If this parameter is changed then the maxNodeCorpusCount parameter should probably also be changed by a proportional amount.
 
-The warcUrlList variable in createSmall.sh selects the particular version of Common Crawl. New versions are announced on the [Common Crawl blog](http://commoncrawl.org/connect/blog/). The URL should be the link to the WARC files.
+The warcUrlList variable in create.sh selects the particular version of Common Crawl. New versions are announced on the [Common Crawl blog](http://commoncrawl.org/connect/blog/). The URL should be the link to the WARC files.
 
 
 The createSmall.sh script proceeds in steps
